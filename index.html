@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="占い師の姉さんと使い魔の猫がお届けする、毎週月曜更新の12星座占い。">
+<meta property="og:title" content="キョカ姉の許可占い">
+<meta property="og:description" content="毎週月曜のお昼12時、12星座の「今週の運勢」が届く。読むだけで、ちょっと肩の力が抜ける占い。">
+<meta property="og:image" content="https://aquico0505-prog.github.io/kyoka-uranai/uranaishi_to_tsukaima.png">
+<link rel="icon" href="uranaishi_to_tsukaima.png">
+<title>キョカ姉の許可占い</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<style>
+/* Layout: home is a 12-sign picker grid; choosing a sign opens a letter-like reading column with weekly / half-year tabs */
+:root {
+  --bg: #FFF8EE;
+  --paper: #FFFFFF;
+  --fg: #3E2C22;
+  --muted: #86705F;
+  --line: #EBDCCB;
+  --mikan: #EF8A1F;
+  --mikan-soft: #FDE7CC;
+  --shu: #D23B26;
+  --month: #F6EFE6;
+  --font-display: "Dela Gothic One", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #221A16; --paper: #2D231E; --fg: #F5E9DC; --muted: #B8A393; --line: #45362D; --mikan: #F5A04A; --mikan-soft: #4A3220; --shu: #F0634B; --month: #362A23; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #221A16; --paper: #2D231E; --fg: #F5E9DC; --muted: #B8A393; --line: #45362D; --mikan: #F5A04A; --mikan-soft: #4A3220; --shu: #F0634B; --month: #362A23; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 2; }
+.wrap {
+  max-width: 680px; margin: 0 auto; padding-block: 20px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 20px;
+}
+.tabs { display: flex; justify-content: center; gap: 4px; border-bottom: 1px solid var(--line); }
+.tabs button { font: inherit; font-weight: 700; font-size: 15px; background: none; border: 0; color: var(--muted); padding: 10px 18px; cursor: pointer; border-bottom: 3px solid transparent; }
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--shu); }
+.tabs button:focus-visible { outline: 3px solid var(--mikan); outline-offset: 2px; }
+.card { background: var(--paper); border-radius: 20px; padding: 28px 22px 32px; display: grid; gap: 18px; }
+.head { text-align: center; display: grid; gap: 6px; justify-items: center; }
+.head h1 { font-family: var(--font-display); font-weight: 400; font-size: 40px; line-height: 1.2; margin: 0; }
+.head .born { font-size: 12px; color: var(--muted); }
+.pill { display: inline-block; border: 1.5px solid var(--shu); color: var(--shu); border-radius: 999px; padding: 0 14px; font-size: 13px; font-weight: 700; }
+.date { font-family: var(--font-display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.head img { width: 170px; max-height: 170px; object-fit: contain; }
+h2 { font-family: var(--font-display); font-weight: 400; font-size: 21px; text-align: center; margin: 8px 0 0; line-height: 1.4; text-wrap: balance; }
+.sub { text-align: center; font-size: 13px; color: var(--muted); font-weight: 700; margin-bottom: -10px; }
+.body p { margin: 0 0 1em; }
+.body p:last-child { margin-bottom: 0; }
+.stars { background: var(--month); border-radius: 14px; padding: 12px 16px; font-size: 13px; line-height: 1.8; }
+.stars b { color: var(--shu); }
+.colors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 420px) { .colors { grid-template-columns: minmax(0, 1fr); } }
+.color { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: center; }
+.color i { width: 44px; height: 44px; border-radius: 50%; display: block; }
+.color b { display: block; font-size: 13px; }
+.color span { font-size: 12px; color: var(--muted); line-height: 1.6; display: block; }
+.lucky { background: var(--mikan-soft); border-radius: 14px; padding: 16px; display: grid; gap: 4px; position: relative; }
+.lucky .label { color: var(--shu); font-weight: 700; font-size: 13px; letter-spacing: .06em; }
+.lucky .act { font-weight: 700; font-size: 17px; line-height: 1.7; padding-right: 78px; }
+.stamp { position: absolute; right: 12px; bottom: 12px; width: 54px; height: 54px; border: 2.5px solid var(--shu); border-radius: 50%; color: var(--shu); display: grid; place-items: center; transform: rotate(-12deg); font-family: var(--font-display); font-size: 15px; }
+.lucky .tsukkomi { font-size: 14px; line-height: 1.8; padding-right: 78px; }
+.lucky .ok, .days .ok { font-weight: 700; color: var(--shu); font-size: 14px; }
+.days { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+#todayList .day { grid-template-columns: 76px minmax(0, 1fr); }
+.day { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.day .d { display: grid; justify-items: center; align-content: start; font-size: 12px; color: var(--muted); line-height: 1.4; }
+.day .d b { font-family: var(--font-display); font-weight: 400; font-size: 17px; color: var(--fg); }
+.day p { margin: 0; }
+.day .a { font-weight: 700; line-height: 1.7; }
+.day .t { font-size: 14px; line-height: 1.8; }
+.kyoka { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: center; border-top: 2px dashed var(--line); padding-top: 18px; }
+.kyoka img { width: 64px; }
+.kyoka p { margin: 0; font-weight: 700; }
+.num { font-family: var(--font-display); color: var(--mikan); font-size: 34px; text-align: center; line-height: 1; margin-top: 16px; }
+.month { background: var(--month); border-radius: 16px; padding: 18px 18px 20px; display: grid; gap: 6px; }
+.month h3 { font-family: var(--font-display); font-weight: 400; font-size: 20px; margin: 0; }
+.month .theme { font-weight: 700; color: var(--shu); font-size: 14px; }
+.month p { margin: 0; }
+.months { display: grid; gap: 12px; }
+.note { font-size: 12px; color: var(--muted); line-height: 1.8; }
+
+[hidden] { display: none !important; }
+.top { text-align: center; display: grid; gap: 8px; justify-items: center; }
+.top img.hero { width: 220px; }
+.top h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.3; margin: 0; }
+.top p { margin: 0; font-size: 14px; color: var(--muted); }
+.signs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 640px) { .signs { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.signs a { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 14px 6px; text-align: center; text-decoration: none; color: var(--fg); display: grid; gap: 2px; }
+.signs a:focus-visible, .back:focus-visible { outline: 3px solid var(--mikan); outline-offset: 2px; }
+.signs img { width: 100%; max-width: 110px; aspect-ratio: 1; object-fit: contain; justify-self: center; }
+.signs b { font-family: var(--font-display); font-weight: 400; font-size: 17px; }
+.signs small { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.signs .soon { opacity: .45; }
+.back { justify-self: start; font-weight: 700; font-size: 14px; color: var(--shu); text-decoration: none; }
+.lucky .tk { position: absolute; right: 8px; bottom: 8px; width: 64px; height: auto; }
+.backbtn { display: block; text-align: center; background: var(--shu); color: #fff; font-weight: 700; font-size: 16px; text-decoration: none; border-radius: 14px; padding: 14px 18px; }
+.backbtn:focus-visible { outline: 3px solid var(--mikan); outline-offset: 2px; }
+.wait { text-align: center; color: var(--muted); padding: 40px 0; }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <section id="home" class="wrap" style="padding:0">
+    <div class="top">
+      <img class="hero" src="uranaishi_to_tsukaima.png" alt="占い師の姉さんと、頭にみかんをのせたピンクの使い魔の猫">
+      <h1>キョカ姉の許可占い</h1>
+      <p>あんたの星座を選んで。今週の運勢と、半年分の手紙が読めるよ。最後は使い魔が「許可」のハンコを押してくれる。</p>
+    </div>
+    <nav class="signs" id="signs" aria-label="星座を選ぶ"></nav>
+    <p class="note">毎週月曜更新。天体の位置は天文計算で求めた値です。占いは楽しむためのもので、健康・お金・大事な決断の判断には使わないでください。</p>
+  </section>
+
+  <section id="today" hidden>
+    <div class="wrap" style="padding:0">
+      <a class="back" href="#">← 星座の一覧へ</a>
+      <div class="top">
+        <img class="hero" src="tsukaima_itazura.png" alt="ハンコを持った使い魔の猫" style="width:150px">
+        <h1>今日の許可</h1>
+        <p id="todayDate"></p>
+      </div>
+      <ol class="days" id="todayList"></ol>
+      <a class="backbtn" href="#">12星座の一覧へ戻る</a>
+    </div>
+  </section>
+
+  <section id="howto" hidden>
+    <div class="wrap" style="padding:0">
+      <a class="back" href="#">← 星座の一覧へ</a>
+      <article class="card">
+        <div class="head"><img src="uranaishi_nikkori.png" alt="占い師の姉さん"><h1 style="font-size:28px">使い方</h1></div>
+        <div class="sub">届くもの</div>
+        <div class="body">
+          <p><b>毎週月曜のお昼12時</b>に、LINEで12星座の「今週の運勢」が届くよ。横にスクロールして、あんたの星座の「今週の運勢を読む」を押してね。</p>
+          <p><b>今週の運勢</b>：今週のあんた、乗り切り方、今週のラッキー行動、月〜日の「今日の許可」。</p>
+          <p><b>半期占い</b>：半年分の流れと、月ごとのアドバイス。星座のページの「半期占い」タブから読めるよ。</p>
+          <p><b>今日の許可</b>：毎日ひとつ、「それだけでいいの！？」な小さな行動。「いいの。」って、姉さんが許可する。</p>
+        </div>
+        <div class="sub">LINEの画面下のメニュー</div>
+        <div class="body">
+          <p><b>今週の運勢</b>：12星座から選んで読む</p>
+          <p><b>今日の許可</b>：今日の分を、12星座まとめて見る</p>
+          <p><b>使い方</b>：このページ</p>
+        </div>
+        <div class="sub">占いについて</div>
+        <div class="body">
+          <p>占いは、本物の星の動き（満月・新月・水星逆行など）を天文計算で調べて、毎週書き下ろしています。</p>
+          <p>占いは楽しむためのもの。健康やお金、大事な決断は、ちゃんと専門の人に相談するのよ。</p>
+        </div>
+        <div class="kyoka"><img src="uranaishi_nikkori.png" alt=""><p>ゆるくいきな。姉さんが許可する。</p></div>
+      </article>
+      <a class="backbtn" href="#">12星座の一覧へ戻る</a>
+    </div>
+  </section>
+
+  <section id="reader" hidden>
+    <div class="wrap" style="padding:0">
+      <a class="back" href="#">← 星座の一覧へ</a>
+      <div class="tabs" role="tablist" aria-label="占いの種類">
+        <button role="tab" id="tab-week" aria-controls="week" aria-selected="true">週刊占い</button>
+        <button role="tab" id="tab-half" aria-controls="half" aria-selected="false">半期占い</button>
+      </div>
+      <article class="card" id="week" role="tabpanel" aria-labelledby="tab-week"></article>
+      <article class="card" id="half" role="tabpanel" aria-labelledby="tab-half" hidden></article>
+      <a class="backbtn" href="#">12星座の一覧へ戻る</a>
+    </div>
+  </section>
+</div>
+
+<script>
+const SIGNS = [
+  ["aries", "牡羊座", "♈", "3/21〜4/19"], ["taurus", "牡牛座", "♉", "4/20〜5/20"], ["gemini", "双子座", "♊", "5/21〜6/21"],
+  ["cancer", "蟹座", "♋", "6/22〜7/22"], ["leo", "獅子座", "♌", "7/23〜8/22"], ["virgo", "乙女座", "♍", "8/23〜9/22"],
+  ["libra", "天秤座", "♎", "9/23〜10/23"], ["scorpio", "蠍座", "♏", "10/24〜11/22"], ["sagittarius", "射手座", "♐", "11/23〜12/21"],
+  ["capricorn", "山羊座", "♑", "12/22〜1/19"], ["aquarius", "水瓶座", "♒", "1/20〜2/18"], ["pisces", "魚座", "♓", "2/19〜3/20"],
+];
+const $ = (id) => document.getElementById(id);
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const br = (t) => esc(t).replace(/\n/g, "<br>");
+const ps = (arr) => arr.map((p) => `<p>${esc(p)}</p>`).join("");
+const cache = {};
+
+$("signs").innerHTML = SIGNS.map(([k, n, g, d]) =>
+  `<a href="#${k}" id="s-${k}"><img src="signs/${k}.png" alt=""><b>${n}</b><small>${d}</small></a>`).join("");
+
+function lucky(l, label) {
+  return `<div class="lucky">${label ? `<span class="label">${label}</span>` : ""}<span class="act">${esc(l.act)}</span><span class="tsukkomi">${esc(l.tsukkomi)}</span><span class="ok">姉さんが許可する。</span><img class="tk" src="tsukaima_itazura.png" alt="" aria-hidden="true"></div>`;
+}
+function head(d, pill, date) {
+  return `<div class="head"><h1>${esc(d.sign)}</h1><div class="born">${esc(d.born)}</div><span class="pill">${pill}</span><div class="date">${esc(date)}</div><img src="signs/${d.key}.png" alt="${esc(d.sign)}のキャラクター"></div>`;
+}
+function closing(t) {
+  return `<div class="kyoka"><img src="uranaishi_nikkori.png" alt=""><p>${esc(t)}</p></div>`;
+}
+function renderWeek(d) {
+  const w = d.weekly;
+  return head(d, "今週の運勢", w.range) +
+    `<div class="stars"><b>今週の空：</b>${esc(w.stars)}</div>` +
+    `<div class="sub">姉さんが見抜いた</div><h2>今週のあんた</h2><div class="body">${ps(w.look)}</div>` +
+    `<div class="sub">姉さんから</div><h2>今週の乗り切り方</h2><div class="body">${ps(w.advice)}</div>` +
+    `<div class="sub">これだけやればいい</div><h2>今週のラッキー行動</h2>${lucky(w.lucky)}` +
+    `<div class="sub">毎朝ひとつ</div><h2>今日の許可</h2><ol class="days">` +
+    w.days.map((x) => `<li class="day"><span class="d"><b>${esc(x.date)}</b>${esc(x.dow)}</span><div><p class="a">${esc(x.act)}</p><p class="t">${esc(x.tsukkomi)}</p><p class="ok">姉さんが許可する。</p></div></li>`).join("") +
+    `</ol>` + closing(w.closing);
+}
+function renderHalf(d) {
+  const h = d.half;
+  return head(d, "半期占い", h.period) +
+    `<div class="stars"><b>この半年の空：</b>${esc(h.stars)}</div>` +
+    `<div class="sub">姉さんからの手紙</div><h2>${br(h.title)}</h2><div class="body">${ps(h.intro)}</div>` +
+    h.sections.map((s, i) => `<div class="num">0${i + 1}</div><h2>${br(s.title)}</h2><div class="body">${ps(s.paras)}</div>`).join("") +
+    `<div class="num">05</div><h2>月ごとの流れ</h2><div class="months">` +
+    h.months.map((m) => `<div class="month"><h3>${esc(m.month)}</h3><span class="theme">${esc(m.theme)}</span><p>${esc(m.text)}</p></div>`).join("") +
+    `</div>` + lucky(h.lucky, "上半期のラッキー行動") + closing(h.closing);
+}
+function tab(which) {
+  ["week", "half"].forEach((p) => { $("tab-" + p).setAttribute("aria-selected", p === which); $(p).hidden = p !== which; });
+}
+$("tab-week").addEventListener("click", () => tab("week"));
+$("tab-half").addEventListener("click", () => tab("half"));
+
+async function load(k) {
+  if (cache[k]) return cache[k];
+  const r = await fetch("data/" + k + ".json");
+  if (!r.ok) throw new Error("not found");
+  return (cache[k] = await r.json());
+}
+async function route() {
+  const k = location.hash.slice(1);
+  const sign = SIGNS.find((s) => s[0] === k);
+  ["home", "reader", "today", "howto"].forEach((id) => { $(id).hidden = true; });
+  if (k === "today") { $("today").hidden = false; renderToday(); window.scrollTo(0, 0); return; }
+  if (k === "howto") { $("howto").hidden = false; window.scrollTo(0, 0); return; }
+  if (!sign) { $("home").hidden = false; return; }
+  $("reader").hidden = false; tab("week");
+  $("week").innerHTML = `<p class="wait">${sign[1]}の手紙を読み込んでいます…</p>`; $("half").innerHTML = "";
+  try {
+    const d = await load(k);
+    $("week").innerHTML = renderWeek(d);
+    $("half").innerHTML = renderHalf(d);
+  } catch (e) {
+    $("week").innerHTML = `<p class="wait">${sign[1]}は準備中です。ほかの星座を選んでね。</p>`;
+  }
+  window.scrollTo(0, 0);
+}
+
+// 日本時間の今日の日付（例 "11/2"）
+function todayJST() {
+  const t = new Date(Date.now() + 9 * 3600 * 1000);
+  return { md: `${t.getUTCMonth() + 1}/${t.getUTCDate()}`, dow: "日月火水木金土"[t.getUTCDay()] };
+}
+async function renderToday() {
+  const { md, dow } = todayJST();
+  $("todayDate").textContent = `${md}（${dow}）の許可。あんたの星座を探してね。`;
+  $("todayList").innerHTML = `<p class="wait">読み込んでいます…</p>`;
+  const rows = await Promise.all(SIGNS.map(async ([k, n]) => {
+    try {
+      const d = await load(k);
+      const x = d.weekly.days.find((y) => y.date === md);
+      if (!x) return "";
+      return `<li class="day"><a class="d" href="#${k}" style="text-decoration:none;color:inherit"><img src="signs/${k}.png" alt="" style="width:48px;height:48px;object-fit:contain"><b style="font-size:13px">${esc(n)}</b></a><div><p class="a">${esc(x.act)}</p><p class="t">${esc(x.tsukkomi)}</p><p class="ok">姉さんが許可する。</p></div></li>`;
+    } catch (e) { return ""; }
+  }));
+  const html = rows.join("");
+  $("todayList").innerHTML = html || `<p class="wait">今日の許可は、次の月曜のお昼12時に届く週の分から読めるよ。もう少し待ってな。</p>`;
+}
+window.addEventListener("hashchange", route);
+route();
+</script>
+
+</body>
+</html>
