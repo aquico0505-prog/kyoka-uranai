@@ -204,7 +204,7 @@ function closing(t) {
 function renderWeek(d) {
   const w = d.weekly;
   return head(d, "今週の運勢", w.range) +
-    `<div class="stars"><b>今週の空：</b>${esc(w.stars)}</div>` +
+    `<div class="stars"><b>今週の星のニュース：</b>${esc(w.stars)}</div>` +
     `<div class="sub">姉さんが見抜いた</div><h2>今週のあんた</h2><div class="body">${ps(w.look)}</div>` +
     `<div class="sub">姉さんから</div><h2>今週の乗り切り方</h2><div class="body">${ps(w.advice)}</div>` +
     `<div class="sub">これだけやればいい</div><h2>今週のラッキー行動</h2>${lucky(w.lucky)}` +
